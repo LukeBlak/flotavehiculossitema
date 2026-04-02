@@ -2,65 +2,50 @@
 
 namespace App\Policies;
 
-use App\Models\MaintenanceLog;
+use App\Models\MaintenanceOrder;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
+use Illuminate\Auth\Access\HandlesAuthorization;
 
-class MaintenanceLogPolicy
+class MaintenanceOrderPolicy
 {
+    use HandlesAuthorization;
+
     /**
-     * Determine whether the user can view any models.
+     * Gerente y Supervisor pueden ver el historial de mantenimientos.
+     * Motorista no tiene acceso.
      */
-    public function viewAny(User $user): bool
+    public function view(User $user): bool
     {
-        return false;
+        return $user->hasPermissionTo('maintenance.view');
     }
 
     /**
-     * Determine whether the user can view the model.
-     */
-    public function view(User $user, MaintenanceLog $maintenanceLog): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can create models.
+     * Solo el Supervisor puede programar/crear órdenes de mantenimiento.
      */
     public function create(User $user): bool
     {
-        return false;
+        return $user->hasPermissionTo('maintenance.schedule');
     }
 
     /**
-     * Determine whether the user can update the model.
+     * Lógica clave del negocio:
+     * — Órdenes con costo <= $200: Supervisor puede aprobarlas.
+     * — Órdenes con costo >  $200: solo el Gerente puede aprobarlas.
      */
-    public function update(User $user, MaintenanceLog $maintenanceLog): bool
+    public function approve(User $user, MaintenanceOrder $order): bool
     {
-        return false;
+        if ($order->estimated_cost > 200) {
+            return $user->hasPermissionTo('maintenance.approve'); // solo Gerente
+        }
+
+        return $user->hasRole(['gerente', 'supervisor']);
     }
 
     /**
-     * Determine whether the user can delete the model.
+     * El Supervisor puede editar órdenes que aún no fueron aprobadas.
      */
-    public function delete(User $user, MaintenanceLog $maintenanceLog): bool
+    public function update(User $user, MaintenanceOrder $order): bool
     {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, MaintenanceLog $maintenanceLog): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, MaintenanceLog $maintenanceLog): bool
-    {
-        return false;
+        return $user->hasRole('supervisor') && $order->status === 'pending';
     }
 }

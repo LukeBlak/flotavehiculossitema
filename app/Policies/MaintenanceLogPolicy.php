@@ -2,11 +2,11 @@
 
 namespace App\Policies;
 
-use App\Models\MaintenanceOrder;
+use App\Models\MaintenanceLog;
 use App\Models\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
-class MaintenanceOrderPolicy
+class MaintenanceLogPolicy
 {
     use HandlesAuthorization;
 
@@ -16,7 +16,7 @@ class MaintenanceOrderPolicy
      */
     public function view(User $user): bool
     {
-        return $user->hasPermissionTo('maintenance.view');
+        return $user->hasRole(['gerente', 'supervisor']);
     }
 
     /**
@@ -24,7 +24,7 @@ class MaintenanceOrderPolicy
      */
     public function create(User $user): bool
     {
-        return $user->hasPermissionTo('maintenance.schedule');
+        return $user->hasRole('supervisor');
     }
 
     /**
@@ -32,10 +32,10 @@ class MaintenanceOrderPolicy
      * — Órdenes con costo <= $200: Supervisor puede aprobarlas.
      * — Órdenes con costo >  $200: solo el Gerente puede aprobarlas.
      */
-    public function approve(User $user, MaintenanceOrder $order): bool
+    public function approve(User $user, MaintenanceLog $order): bool
     {
         if ($order->estimated_cost > 200) {
-            return $user->hasPermissionTo('maintenance.approve'); // solo Gerente
+            return $user->hasRole('gerente');
         }
 
         return $user->hasRole(['gerente', 'supervisor']);
@@ -44,7 +44,7 @@ class MaintenanceOrderPolicy
     /**
      * El Supervisor puede editar órdenes que aún no fueron aprobadas.
      */
-    public function update(User $user, MaintenanceOrder $order): bool
+    public function update(User $user, MaintenanceLog $order): bool
     {
         return $user->hasRole('supervisor') && $order->status === 'pending';
     }

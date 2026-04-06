@@ -4,63 +4,56 @@ namespace App\Policies;
 
 use App\Models\Trip;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
+use Illuminate\Auth\Access\HandlesAuthorization;
 
 class TripPolicy
 {
-    /**
-     * Determine whether the user can view any models.
-     */
-    public function viewAny(User $user): bool
-    {
-        return false;
-    }
+    use HandlesAuthorization;
 
     /**
-     * Determine whether the user can view the model.
+     * Gerente y Supervisor pueden ver todos los viajes.
+     * Motorista solo ve los viajes asignados a su cuenta.
      */
     public function view(User $user, Trip $trip): bool
     {
-        return false;
+        if ($user->hasRole(['gerente', 'supervisor'])) {
+            return true;
+        }
+
+        return $user->hasRole('motorista') && $trip->driver_id === $user->id;
     }
 
     /**
-     * Determine whether the user can create models.
+     * Solo el Supervisor puede asignar viajes.
+     */
+    public function assign(User $user): bool
+    {
+        return $user->hasPermissionTo('trips.assign');
+    }
+
+    /**
+     * Solo el Motorista asignado puede registrar km inicial/final.
+     */
+    public function registerKm(User $user, Trip $trip): bool
+    {
+        return $user->hasRole('motorista')
+            && $trip->driver_id === $user->id
+            && in_array($trip->status, ['assigned', 'in_progress']);
+    }
+
+    /**
+     * Solo el Supervisor puede validar km y rutas reportadas.
+     */
+    public function validate(User $user): bool
+    {
+        return $user->hasPermissionTo('trips.validate');
+    }
+
+    /**
+     * Solo el Supervisor puede crear/asignar viajes.
      */
     public function create(User $user): bool
     {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can update the model.
-     */
-    public function update(User $user, Trip $trip): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can delete the model.
-     */
-    public function delete(User $user, Trip $trip): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, Trip $trip): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, Trip $trip): bool
-    {
-        return false;
+        return $user->hasRole('supervisor');
     }
 }

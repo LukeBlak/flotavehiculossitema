@@ -21,13 +21,13 @@ class VehicleSeeder extends Seeder
             $typeIds = VehicleType::query()->pluck('id');
         }
 
-        $driverIds = User::query()->where('role', 'driver')->pluck('id');
+        $driverIds = User::query()->where('role', 'motorista')->pluck('id');
         if ($driverIds->isEmpty()) {
             User::factory()->count(5)->create([
-                'role' => 'driver',
+                'role' => 'motorista',
                 'license_number' => null,
             ]);
-            $driverIds = User::query()->where('role', 'driver')->pluck('id');
+            $driverIds = User::query()->where('role', 'motorista')->pluck('id');
         }
 
         Vehicle::factory()

@@ -15,7 +15,7 @@ class MaintenanceLogSeeder extends Seeder
     public function run(): void
     {
         $vehicleIds = Vehicle::query()->pluck('id');
-        $userIds = User::query()->pluck('id');
+        $userIds = User::query()->where('role', 'supervisor')->pluck('id');
 
         if ($vehicleIds->isEmpty() || $userIds->isEmpty()) {
             return;

@@ -24,7 +24,11 @@ class MaintenanceLogFactory extends Factory
 
         return [
             'vehicle_id' => Vehicle::factory(),
-            'user_id' => User::factory(),
+            'user_id' => User::factory()->state([
+                'role' => 'supervisor',
+                'license_number' => null,
+                'is_active' => true,
+            ]),
             'type' => fake()->randomElement(['preventive', 'corrective']),
             'description' => fake()->sentence(10),
             'cost' => fake()->randomFloat(2, 50, 2500),

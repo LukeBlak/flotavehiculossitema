@@ -29,7 +29,7 @@ class VehicleFactory extends Factory
             'next_maintenance_km' => fake()->numberBetween(12000, 270000),
             'status' => fake()->randomElement(['active', 'maintenance', 'inactive']),
             'assigned_driver_id' => User::factory()->state([
-                'role' => 'driver',
+                'role' => 'motorista',
                 'license_number' => strtoupper(fake()->bothify('LIC-#####')),
                 'is_active' => true,
             ]),

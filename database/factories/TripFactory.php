@@ -27,7 +27,7 @@ class TripFactory extends Factory
         return [
             'vehicle_id' => Vehicle::factory(),
             'driver_id' => User::factory()->state([
-                'role' => 'driver',
+                'role' => 'motorista',
                 'license_number' => strtoupper(fake()->bothify('LIC-#####')),
                 'is_active' => true,
             ]),

@@ -26,7 +26,11 @@ class FuelLogFactory extends Factory
         return [
             'trip_id' => Trip::factory(),
             'vehicle_id' => Vehicle::factory(),
-            'user_id' => User::factory(),
+            'user_id' => User::factory()->state([
+                'role' => 'motorista',
+                'license_number' => strtoupper(fake()->bothify('LIC-#####')),
+                'is_active' => true,
+            ]),
             'liters' => $liters,
             'cost_per_liter' => $costPerLiter,
             'total_cost' => round($liters * $costPerLiter, 2),

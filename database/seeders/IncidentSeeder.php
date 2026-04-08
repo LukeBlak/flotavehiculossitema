@@ -15,7 +15,7 @@ class IncidentSeeder extends Seeder
     public function run(): void
     {
         $tripIds = Trip::query()->pluck('id');
-        $userIds = User::query()->pluck('id');
+        $userIds = User::query()->where('role', 'motorista')->pluck('id');
 
         if ($tripIds->isEmpty() || $userIds->isEmpty()) {
             return;

@@ -44,11 +44,18 @@ describe('VehicleTypePolicy - stub sin implementar', function () {
 
 describe('FuelLogPolicy - stub sin implementar', function () {
     beforeEach(fn() => $this->policy = new FuelLogPolicy());
-    it('ningun rol tiene acceso hasta implementar', function () {
-        $log = FuelLog::factory()->make();
-        expect($this->policy->viewAny(gerente()))->toBeFalse()
-            ->and($this->policy->create(motorista()))->toBeFalse()
-            ->and($this->policy->delete(gerente(), $log))->toBeFalse();
+    it('gerente y supervisor pueden ver registros, motorista solo los suyos', function () {
+        $driver = motorista();
+        $ownLog = FuelLog::factory()->make(['user_id' => $driver->id]);
+        $otherLog = FuelLog::factory()->make(['user_id' => gerente()->id]);
+
+        expect($this->policy->viewAny(gerente()))->toBeTrue()
+            ->and($this->policy->viewAny(supervisor()))->toBeTrue()
+            ->and($this->policy->viewAny($driver))->toBeFalse()
+            ->and($this->policy->view($driver, $ownLog))->toBeTrue()
+            ->and($this->policy->view($driver, $otherLog))->toBeFalse()
+            ->and($this->policy->create($driver))->toBeTrue()
+            ->and($this->policy->create(gerente()))->toBeFalse();
     });
 });
 
@@ -73,35 +80,32 @@ describe('TripPolicy - restricciones por rol', function () {
 
 describe('IncidentPolicy - restricciones por rol', function () {
     beforeEach(fn() => $this->policy = new IncidentPolicy());
-    it('motorista no puede ver incidente de otro motorista', function () {
+    it('motorista puede ver solo sus incidentes y reportarlos', function () {
         $driver1 = motorista();
         $driver2 = motorista();
-        $incident = Incident::factory()->make(['reported_by' => $driver2->id]);
-        expect($this->policy->view($driver1, $incident))->toBeFalse();
-    });
-    it('supervisor no puede crear incidentes', function () {
-        expect($this->policy->create(supervisor()))->toBeFalse();
-    });
-    it('gerente no puede crear incidentes', function () {
-        expect($this->policy->create(gerente()))->toBeFalse();
+        $ownIncident = Incident::factory()->make(['user_id' => $driver1->id]);
+        $otherIncident = Incident::factory()->make(['user_id' => $driver2->id]);
+
+        expect($this->policy->view($driver1, $ownIncident))->toBeTrue()
+            ->and($this->policy->view($driver1, $otherIncident))->toBeFalse()
+            ->and($this->policy->create($driver1))->toBeTrue()
+            ->and($this->policy->create(supervisor()))->toBeFalse()
+            ->and($this->policy->create(gerente()))->toBeFalse();
     });
 });
 
 describe('MaintenanceLogPolicy - restricciones por rol', function () {
     beforeEach(fn() => $this->policy = new MaintenanceLogPolicy());
-    it('supervisor no puede editar orden aprobada', function () {
-        $log = MaintenanceLog::factory()->make(['status' => 'approved']);
-        expect($this->policy->update(supervisor(), $log))->toBeFalse();
-    });
-    it('gerente no puede editar ordenes', function () {
+    it('supervisor puede crear y editar solo ordenes pendientes', function () {
         $log = MaintenanceLog::factory()->make(['status' => 'pending']);
-        expect($this->policy->update(gerente(), $log))->toBeFalse();
-    });
-    it('motorista no puede editar ordenes', function () {
-        $log = MaintenanceLog::factory()->make(['status' => 'pending']);
-        expect($this->policy->update(motorista(), $log))->toBeFalse();
-    });
-    it('motorista no puede crear ordenes de mantenimiento', function () {
-        expect($this->policy->create(motorista()))->toBeFalse();
+        $approvedLog = MaintenanceLog::factory()->make(['status' => 'approved']);
+
+        expect($this->policy->viewAny(supervisor()))->toBeTrue()
+            ->and($this->policy->create(supervisor()))->toBeTrue()
+            ->and($this->policy->update(supervisor(), $log))->toBeTrue()
+            ->and($this->policy->update(supervisor(), $approvedLog))->toBeFalse()
+            ->and($this->policy->approve(supervisor(), $log))->toBeTrue()
+            ->and($this->policy->approve(supervisor(), MaintenanceLog::factory()->make(['cost' => 250])))->toBeFalse()
+            ->and($this->policy->approve(gerente(), MaintenanceLog::factory()->make(['cost' => 250])))->toBeTrue();
     });
 });

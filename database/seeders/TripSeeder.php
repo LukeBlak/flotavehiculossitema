@@ -15,7 +15,7 @@ class TripSeeder extends Seeder
     public function run(): void
     {
         $vehicleIds = Vehicle::query()->pluck('id');
-        $driverIds = User::query()->where('role', 'driver')->pluck('id');
+        $driverIds = User::query()->where('role', 'motorista')->pluck('id');
 
         if ($vehicleIds->isEmpty()) {
             return;

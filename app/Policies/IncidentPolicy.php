@@ -10,40 +10,42 @@ class IncidentPolicy
 {
     use HandlesAuthorization;
 
-    /**
-     * Gerente y Supervisor ven todos los incidentes.
-     * Motorista solo ve los incidentes que él mismo reportó.
-     */
+    public function viewAny(User $user): bool
+    {
+        return $user->hasRole(['gerente', 'supervisor']);
+    }
+
     public function view(User $user, Incident $incident): bool
     {
         if ($user->hasRole(['gerente', 'supervisor'])) {
             return true;
         }
 
-        return $user->hasRole('motorista') && $incident->reported_by === $user->id;
+        return $user->hasRole('motorista') && (int) $incident->user_id === (int) $user->id;
     }
 
-    /**
-     * Solo el Motorista puede reportar incidentes con descripción y evidencia.
-     */
     public function report(User $user): bool
     {
-        return $user->hasPermissionTo('incidents.report');
+        return $user->hasRole('motorista');
     }
 
-    /**
-     * Solo el Supervisor puede actualizar el estado de un incidente.
-     */
     public function manage(User $user): bool
     {
-        return $user->hasPermissionTo('incidents.manage');
+        return $user->hasRole(['gerente', 'supervisor']);
     }
 
-    /**
-     * Crear un incidente equivale a reportarlo: solo Motorista.
-     */
     public function create(User $user): bool
     {
         return $user->hasRole('motorista');
+    }
+
+    public function update(User $user, Incident $incident): bool
+    {
+        return $user->hasRole(['gerente', 'supervisor']);
+    }
+
+    public function delete(User $user, Incident $incident): bool
+    {
+        return $user->hasRole(['gerente', 'supervisor']);
     }
 }

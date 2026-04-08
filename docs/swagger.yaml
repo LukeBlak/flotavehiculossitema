@@ -1,7 +1,7 @@
 openapi: 3.0.4
 info:
   title: API Sistema de Flota Vehicular
-  version: 1.0.0
+  version: 1.1.0
   description: |
     Especificacion OpenAPI para la API del sistema de flota vehicular.
     Seguridad implementada con Laravel Sanctum mediante Bearer Tokens.
@@ -13,7 +13,7 @@ tags:
   - name: Auth
     description: Autenticacion y gestion de token
   - name: VehicleTypes
-    description: CRUD de tipos de vehiculo
+    description: Sistema de gestion de una flota de vehiculo
   - name: Vehicles
     description: CRUD de vehiculos
   - name: Trips
@@ -41,7 +41,7 @@ paths:
             examples:
               default:
                 value:
-                  email: admin@flota.com
+                  email: admin@flota.local
                   password: secret123
                   device_name: postman
       responses:

@@ -13,7 +13,8 @@ class VehicleTypeController extends Controller
      */
     public function index()
     {
-        //
+        $vehicleTypes = VehicleType::all();
+        return response()->json(['data' => $vehicleTypes]);
     }
 
     /**
@@ -29,7 +30,8 @@ class VehicleTypeController extends Controller
      */
     public function store(StoreVehicleTypeRequest $request)
     {
-        //
+        $vehicleType = VehicleType::create($request->validated());
+        return response()->json(['data' => $vehicleType], 201);
     }
 
     /**
@@ -37,7 +39,7 @@ class VehicleTypeController extends Controller
      */
     public function show(VehicleType $vehicleType)
     {
-        //
+        return response()->json(['data' => $vehicleType]);
     }
 
     /**
@@ -53,7 +55,8 @@ class VehicleTypeController extends Controller
      */
     public function update(UpdateVehicleTypeRequest $request, VehicleType $vehicleType)
     {
-        //
+        $vehicleType->update($request->validated());
+        return response()->json(['data' => $vehicleType]);
     }
 
     /**
@@ -61,6 +64,7 @@ class VehicleTypeController extends Controller
      */
     public function destroy(VehicleType $vehicleType)
     {
-        //
+        $vehicleType->delete();
+        return response()->json(['message' => 'Tipo de vehículo eliminado'], 204);
     }
 }

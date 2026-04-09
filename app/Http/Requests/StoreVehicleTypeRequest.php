@@ -12,7 +12,7 @@ class StoreVehicleTypeRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return $this->user()->hasRole('gerente');
     }
 
     /**
@@ -23,7 +23,11 @@ class StoreVehicleTypeRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'name' => ['required', 'string', 'max:255'],
+            'code' => ['required', 'string', 'unique:vehicle_types'],
+            'maintenance_interval_km' => ['required', 'integer', 'min:1000'],
+            'tank_capacity' => ['required', 'numeric', 'min:10'],
+            'payload_capacity' => ['required', 'numeric', 'min:100'],
         ];
     }
 }

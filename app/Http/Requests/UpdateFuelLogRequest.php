@@ -12,7 +12,7 @@ class UpdateFuelLogRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return $this->user()->hasRole(['gerente', 'supervisor']);
     }
 
     /**
@@ -23,7 +23,10 @@ class UpdateFuelLogRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'liters' => ['sometimes', 'numeric', 'min:0.01'],
+            'cost_per_liter' => ['sometimes', 'numeric', 'min:0'],
+            'station_name' => ['sometimes', 'string', 'max:255'],
+            'receipt_image' => ['sometimes', 'nullable', 'string'],
         ];
     }
 }

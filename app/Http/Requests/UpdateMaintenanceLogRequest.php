@@ -12,7 +12,7 @@ class UpdateMaintenanceLogRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return $this->user()->hasRole('supervisor');
     }
 
     /**
@@ -23,7 +23,12 @@ class UpdateMaintenanceLogRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'type' => ['sometimes', 'string', 'max:255'],
+            'description' => ['sometimes', 'string', 'max:2000'],
+            'cost' => ['sometimes', 'numeric', 'min:0'],
+            'service_date' => ['sometimes', 'date_format:Y-m-d'],
+            'workshop_name' => ['sometimes', 'string', 'max:255'],
+            'status' => ['sometimes', 'in:pending,approved,rejected'],
         ];
     }
 }

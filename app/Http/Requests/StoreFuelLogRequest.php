@@ -12,7 +12,7 @@ class StoreFuelLogRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return $this->user()->hasRole('motorista');
     }
 
     /**
@@ -23,7 +23,13 @@ class StoreFuelLogRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'trip_id' => ['required', 'exists:trips,id'],
+            'vehicle_id' => ['required', 'exists:vehicles,id'],
+            'liters' => ['required', 'numeric', 'min:0.01'],
+            'cost_per_liter' => ['required', 'numeric', 'min:0'],
+            'station_name' => ['required', 'string', 'max:255'],
+            'receipt_image' => ['sometimes', 'string'],
+            'logged_at' => ['required', 'date_format:Y-m-d H:i:s'],
         ];
     }
 }

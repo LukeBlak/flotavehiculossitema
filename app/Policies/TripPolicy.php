@@ -10,6 +10,11 @@ class TripPolicy
 {
     use HandlesAuthorization;
 
+    public function viewAny(User $user): bool
+    {
+        return $user->hasRole(['gerente', 'supervisor', 'motorista']);
+    }
+
     /**
      * Gerente y Supervisor pueden ver todos los viajes.
      * Motorista solo ve los viajes asignados a su cuenta.
@@ -37,8 +42,7 @@ class TripPolicy
     public function registerKm(User $user, Trip $trip): bool
     {
         return $user->hasRole('motorista')
-            && $trip->driver_id === $user->id
-            && in_array($trip->status, ['assigned', 'in_progress']);
+            && (int) $trip->driver_id === (int) $user->id;
     }
 
     /**
@@ -55,5 +59,19 @@ class TripPolicy
     public function create(User $user): bool
     {
         return $user->hasRole('supervisor');
+    }
+
+    public function update(User $user, Trip $trip): bool
+    {
+        if ($user->hasRole(['gerente', 'supervisor'])) {
+            return true;
+        }
+
+        return $user->hasRole('motorista') && (int) $trip->driver_id === (int) $user->id;
+    }
+
+    public function delete(User $user, Trip $trip): bool
+    {
+        return $user->hasRole(['gerente', 'supervisor']);
     }
 }

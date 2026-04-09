@@ -4,7 +4,6 @@ namespace App\Policies;
 
 use App\Models\User;
 use App\Models\VehicleType;
-use Illuminate\Auth\Access\Response;
 
 class VehicleTypePolicy
 {
@@ -13,7 +12,7 @@ class VehicleTypePolicy
      */
     public function viewAny(User $user): bool
     {
-        return false;
+        return true; // Todos pueden ver tipos de vehículos
     }
 
     /**
@@ -21,7 +20,7 @@ class VehicleTypePolicy
      */
     public function view(User $user, VehicleType $vehicleType): bool
     {
-        return false;
+        return true; // Todos pueden ver un tipo específico
     }
 
     /**
@@ -29,7 +28,7 @@ class VehicleTypePolicy
      */
     public function create(User $user): bool
     {
-        return false;
+        return $user->hasRole('gerente');
     }
 
     /**
@@ -37,7 +36,7 @@ class VehicleTypePolicy
      */
     public function update(User $user, VehicleType $vehicleType): bool
     {
-        return false;
+        return $user->hasRole('gerente');
     }
 
     /**
@@ -45,7 +44,7 @@ class VehicleTypePolicy
      */
     public function delete(User $user, VehicleType $vehicleType): bool
     {
-        return false;
+        return $user->hasRole('gerente');
     }
 
     /**
@@ -53,7 +52,7 @@ class VehicleTypePolicy
      */
     public function restore(User $user, VehicleType $vehicleType): bool
     {
-        return false;
+        return $user->hasRole('gerente');
     }
 
     /**
@@ -61,6 +60,6 @@ class VehicleTypePolicy
      */
     public function forceDelete(User $user, VehicleType $vehicleType): bool
     {
-        return false;
+        return $user->hasRole('gerente');
     }
 }

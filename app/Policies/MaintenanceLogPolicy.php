@@ -15,7 +15,7 @@ class MaintenanceLogPolicy
         return $user->hasRole(['gerente', 'supervisor']);
     }
 
-    public function view(User $user): bool
+    public function view(User $user, MaintenanceLog $order): bool
     {
         return $user->hasRole(['gerente', 'supervisor']);
     }
@@ -37,5 +37,10 @@ class MaintenanceLogPolicy
     public function update(User $user, MaintenanceLog $order): bool
     {
         return $user->hasRole('supervisor') && $order->status === 'pending';
+    }
+
+    public function delete(User $user, MaintenanceLog $order): bool
+    {
+        return $user->hasRole(['gerente', 'supervisor']);
     }
 }

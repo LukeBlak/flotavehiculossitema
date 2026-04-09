@@ -12,7 +12,7 @@ class UpdateIncidentRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return $this->user()->hasRole(['gerente', 'supervisor']);
     }
 
     /**
@@ -23,7 +23,8 @@ class UpdateIncidentRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'status' => ['sometimes', 'in:reported,investigating,resolved'],
+            'resolution' => ['sometimes', 'nullable', 'string', 'max:2000'],
         ];
     }
 }

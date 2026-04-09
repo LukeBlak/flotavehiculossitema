@@ -12,7 +12,7 @@ class StoreMaintenanceLogRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return $this->user()->hasRole('supervisor');
     }
 
     /**
@@ -23,7 +23,12 @@ class StoreMaintenanceLogRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'vehicle_id' => ['required', 'exists:vehicles,id'],
+            'type' => ['required', 'string', 'max:255'],
+            'description' => ['required', 'string', 'max:2000'],
+            'cost' => ['required', 'numeric', 'min:0'],
+            'service_date' => ['required', 'date_format:Y-m-d'],
+            'workshop_name' => ['required', 'string', 'max:255'],
         ];
     }
 }

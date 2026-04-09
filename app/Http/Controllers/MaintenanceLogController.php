@@ -13,7 +13,8 @@ class MaintenanceLogController extends Controller
      */
     public function index()
     {
-        //
+        $maintenanceLogs = MaintenanceLog::with('vehicle', 'user')->get();
+        return response()->json(['data' => $maintenanceLogs]);
     }
 
     /**
@@ -29,7 +30,12 @@ class MaintenanceLogController extends Controller
      */
     public function store(StoreMaintenanceLogRequest $request)
     {
-        //
+        $data = $request->validated();
+        $data['user_id'] = auth()->id();
+        $data['status'] = 'pending';
+        
+        $maintenanceLog = MaintenanceLog::create($data);
+        return response()->json(['data' => $maintenanceLog], 201);
     }
 
     /**
@@ -37,7 +43,9 @@ class MaintenanceLogController extends Controller
      */
     public function show(MaintenanceLog $maintenanceLog)
     {
-        //
+        $this->authorize('view', $maintenanceLog);
+        $maintenanceLog->load('vehicle', 'user');
+        return response()->json(['data' => $maintenanceLog]);
     }
 
     /**
@@ -53,7 +61,9 @@ class MaintenanceLogController extends Controller
      */
     public function update(UpdateMaintenanceLogRequest $request, MaintenanceLog $maintenanceLog)
     {
-        //
+        $this->authorize('update', $maintenanceLog);
+        $maintenanceLog->update($request->validated());
+        return response()->json(['data' => $maintenanceLog]);
     }
 
     /**
@@ -61,6 +71,28 @@ class MaintenanceLogController extends Controller
      */
     public function destroy(MaintenanceLog $maintenanceLog)
     {
-        //
+        $this->authorize('delete', $maintenanceLog);
+        $maintenanceLog->delete();
+        return response()->json(['message' => 'Registro de mantenimiento eliminado'], 204);
     }
+
+        /**
+         * Aprobar un registro de mantenimiento.
+         */
+        public function approve(MaintenanceLog $maintenanceLog)
+        {
+            $this->authorize('approve', $maintenanceLog);
+            $maintenanceLog->update(['status' => 'approved']);
+            return response()->json(['data' => $maintenanceLog, 'message' => 'Mantenimiento aprobado']);
+        }
+
+        /**
+         * Rechazar un registro de mantenimiento.
+         */
+        public function reject(MaintenanceLog $maintenanceLog)
+        {
+            $this->authorize('approve', $maintenanceLog);
+            $maintenanceLog->update(['status' => 'rejected']);
+            return response()->json(['data' => $maintenanceLog, 'message' => 'Mantenimiento rechazado']);
+        }
 }

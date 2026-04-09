@@ -18,14 +18,14 @@ use App\Models\FuelLog;
 
 describe('VehiclePolicy - stub sin implementar', function () {
     beforeEach(fn() => $this->policy = new VehiclePolicy());
-    it('ningun rol puede ver vehiculos hasta implementar', function () {
-        expect($this->policy->viewAny(gerente()))->toBeFalse()
-            ->and($this->policy->viewAny(supervisor()))->toBeFalse()
-            ->and($this->policy->viewAny(motorista()))->toBeFalse();
+    it('todos los roles pueden ver vehiculos', function () {
+        expect($this->policy->viewAny(gerente()))->toBeTrue()
+            ->and($this->policy->viewAny(supervisor()))->toBeTrue()
+            ->and($this->policy->viewAny(motorista()))->toBeTrue();
     });
-    it('ningun rol puede crear vehiculos hasta implementar', function () {
-        expect($this->policy->create(gerente()))->toBeFalse()
-            ->and($this->policy->create(supervisor()))->toBeFalse()
+    it('solo gerente y supervisor pueden crear vehiculos', function () {
+        expect($this->policy->create(gerente()))->toBeTrue()
+            ->and($this->policy->create(supervisor()))->toBeTrue()
             ->and($this->policy->create(motorista()))->toBeFalse();
     });
     it('motorista no puede eliminar vehiculos', function () {
@@ -35,8 +35,11 @@ describe('VehiclePolicy - stub sin implementar', function () {
 
 describe('VehicleTypePolicy - stub sin implementar', function () {
     beforeEach(fn() => $this->policy = new VehicleTypePolicy());
-    it('ningun rol tiene acceso hasta implementar', function () {
-        expect($this->policy->viewAny(gerente()))->toBeFalse()
+    it('todos pueden ver, solo gerente puede crear', function () {
+        expect($this->policy->viewAny(gerente()))->toBeTrue()
+            ->and($this->policy->viewAny(supervisor()))->toBeTrue()
+            ->and($this->policy->viewAny(motorista()))->toBeTrue()
+            ->and($this->policy->create(gerente()))->toBeTrue()
             ->and($this->policy->create(supervisor()))->toBeFalse()
             ->and($this->policy->create(motorista()))->toBeFalse();
     });
@@ -97,15 +100,16 @@ describe('IncidentPolicy - restricciones por rol', function () {
 describe('MaintenanceLogPolicy - restricciones por rol', function () {
     beforeEach(fn() => $this->policy = new MaintenanceLogPolicy());
     it('supervisor puede crear y editar solo ordenes pendientes', function () {
-        $log = MaintenanceLog::factory()->make(['status' => 'pending']);
-        $approvedLog = MaintenanceLog::factory()->make(['status' => 'approved']);
+        $pendingLowCost = MaintenanceLog::factory()->make(['status' => 'pending', 'cost' => 150]);
+        $approvedLog = MaintenanceLog::factory()->make(['status' => 'approved', 'cost' => 150]);
+        $pendingHighCost = MaintenanceLog::factory()->make(['status' => 'pending', 'cost' => 250]);
 
         expect($this->policy->viewAny(supervisor()))->toBeTrue()
             ->and($this->policy->create(supervisor()))->toBeTrue()
-            ->and($this->policy->update(supervisor(), $log))->toBeTrue()
+            ->and($this->policy->update(supervisor(), $pendingLowCost))->toBeTrue()
             ->and($this->policy->update(supervisor(), $approvedLog))->toBeFalse()
-            ->and($this->policy->approve(supervisor(), $log))->toBeTrue()
-            ->and($this->policy->approve(supervisor(), MaintenanceLog::factory()->make(['cost' => 250])))->toBeFalse()
-            ->and($this->policy->approve(gerente(), MaintenanceLog::factory()->make(['cost' => 250])))->toBeTrue();
+            ->and($this->policy->approve(supervisor(), $pendingLowCost))->toBeTrue()
+            ->and($this->policy->approve(supervisor(), $pendingHighCost))->toBeFalse()
+            ->and($this->policy->approve(gerente(), $pendingHighCost))->toBeTrue();
     });
 });
